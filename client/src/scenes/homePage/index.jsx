@@ -5,6 +5,10 @@ import UserWidget from "scenes/widgets/UserWidget";
 import MyPostWidget from "scenes/widgets/MyPostWidget";
 import PostsWidget from "scenes/widgets/PostsWidget";
 import AdvertWidget from "scenes/widgets/AdvertWidget";
+import AdvertWidget2 from "scenes/widgets/AdvertWidget2";
+import AdvertWidget3 from "scenes/widgets/AdvertWidget3";
+import AdvertWidget4 from "scenes/widgets/AdvertWidget4";
+import AdvertWidget5 from "scenes/widgets/AdvertWidget5";
 import FriendListWidget from "scenes/widgets/FriendListWidget";
 
 const HomePage = () => {
@@ -34,6 +38,10 @@ const HomePage = () => {
         {isNonMobileScreens && (
           <Box flexBasis="26%">
             <AdvertWidget />
+            <AdvertWidget2 />
+            <AdvertWidget3 />
+            <AdvertWidget4 />
+            <AdvertWidget5 />
             <Box m="2rem 0" />
             <FriendListWidget userId={_id} />
           </Box>

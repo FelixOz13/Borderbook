@@ -2,7 +2,7 @@ import { Typography, useTheme } from '@mui/material'
 import FlexBetween from 'components/FlexBetween'
 import WidgetWrapper from 'components/WidgetWrapper'
 
-const AdvertWidget = () => {
+const AdvertWidget4 = () => {
   const { palette } = useTheme()
   const dark = palette.neutral.dark
   const main = palette.neutral.main
@@ -20,18 +20,18 @@ const AdvertWidget = () => {
         width="100%"
         height="auto"
         alt="advert"
-        src="./assets/bajaduty.png"
+        src="./assets/borderx.jpeg"
         style={{ borderRadius: '0.75rem', margin: '0.75rem 0' }}
       />
       <FlexBetween>
-        <Typography color={main}>Baja Duty Free</Typography>
-        <Typography color={medium}>bajadutyfree.com</Typography>
+        <Typography color={main}>Border X Money Exchange</Typography>
+        <Typography color={medium}>https://borderxchangemoney.com/login/</Typography>
       </FlexBetween>
       <Typography color={medium} m="0.5rem 0">
-      "Cross the Border, Skip the Tax – Shop Baja Duty Free!"
+      "Border X Your Favorite Money Exchange on the San Ysidro Border"
       </Typography>
     </WidgetWrapper>
   )
 }
 
-export default AdvertWidget
+export default AdvertWidget4

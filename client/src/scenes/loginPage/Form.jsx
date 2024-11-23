@@ -56,46 +56,75 @@ const Form = () => {
   const isRegister = pageType === "register";
 
   const register = async (values, onSubmitProps) => {
-    // this allows us to send form info with image
     const formData = new FormData();
-    for (let value in values) {
-      formData.append(value, values[value]);
+  
+    // Dynamically append all form fields
+    for (let key in values) {
+      if (key === "picture") {
+        formData.append("picture", values[key]); // Match multer's expected field name
+      } else {
+        formData.append(key, values[key]);
+      }
     }
-    formData.append("picturePath", values.picture.name);
-
-    const savedUserResponse = await fetch(
-      "http://localhost:3001/auth/register",
-      {
+  
+    try {
+      const savedUserResponse = await fetch("http://localhost:3001/auth/register", {
         method: "POST",
         body: formData,
+      });
+  
+      console.log("Server response status:", savedUserResponse.status); // Log status
+      console.log("Server response:", savedUserResponse); // Log entire response
+  
+      if (!savedUserResponse.ok) {
+        const contentType = savedUserResponse.headers.get("Content-Type");
+        let errorResponse = {};
+  
+        console.log("Response Content-Type:", contentType);
+  
+        if (contentType && contentType.includes("application/json")) {
+          errorResponse = await savedUserResponse.json();
+        } else {
+          errorResponse = { msg: "Failed to register due to server error." };
+        }
+  
+        throw new Error(errorResponse.msg || "Failed to register.");
       }
-    );
-    const savedUser = await savedUserResponse.json();
-    onSubmitProps.resetForm();
-
-    if (savedUser) {
-      setPageType("login");
+  
+      const savedUser = await savedUserResponse.json();
+      console.log("User saved successfully:", savedUser);
+  
+      onSubmitProps.resetForm();
+  
+      if (savedUser) {
+        setPageType("login"); // Redirect to login
+      }
+    } catch (error) {
+      console.error("Error during registration:", error);
     }
   };
+  
+  
+  
 
   const login = async (values, onSubmitProps) => {
     const loggedInResponse = await fetch("http://localhost:3001/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
+      body: JSON.stringify(values), // 'values' should have { email, password }
     });
+  
     const loggedIn = await loggedInResponse.json();
     onSubmitProps.resetForm();
-    if (loggedIn) {
-      dispatch(
-        setLogin({
-          user: loggedIn.user,
-          token: loggedIn.token,
-        })
-      );
-      navigate("/home");
+  
+    if (loggedIn.token) {
+      dispatch(setLogin({ user: loggedIn.user, token: loggedIn.token }));
+      navigate("/home"); // Redirect to the home page
+    } else {
+      alert("Login failed: " + loggedIn.msg); // Show error message from backend
     }
   };
+  
 
   const handleFormSubmit = async (values, onSubmitProps) => {
     if (isLogin) await login(values, onSubmitProps);
@@ -140,6 +169,7 @@ const Form = () => {
                   }
                   helperText={touched.firstName && errors.firstName}
                   sx={{ gridColumn: "span 2" }}
+                  autoComplete="given-name"
                 />
                 <TextField
                   label="Last Name"
@@ -150,6 +180,9 @@ const Form = () => {
                   error={Boolean(touched.lastName) && Boolean(errors.lastName)}
                   helperText={touched.lastName && errors.lastName}
                   sx={{ gridColumn: "span 2" }}
+                  autoComplete="family-name"
+
+                  
                 />
                 <TextField
                   label="Location"
@@ -160,6 +193,7 @@ const Form = () => {
                   error={Boolean(touched.location) && Boolean(errors.location)}
                   helperText={touched.location && errors.location}
                   sx={{ gridColumn: "span 4" }}
+                  autoComplete="address-level1"
                 />
                 <TextField
                   label="Occupation"
@@ -172,6 +206,7 @@ const Form = () => {
                   }
                   helperText={touched.occupation && errors.occupation}
                   sx={{ gridColumn: "span 4" }}
+                  autoComplete="organization-title"
                 />
                 <Box
                   gridColumn="span 4"
@@ -218,6 +253,7 @@ const Form = () => {
               error={Boolean(touched.email) && Boolean(errors.email)}
               helperText={touched.email && errors.email}
               sx={{ gridColumn: "span 4" }}
+              autoComplete="email"
             />
             <TextField
               label="Password"
@@ -229,6 +265,7 @@ const Form = () => {
               error={Boolean(touched.password) && Boolean(errors.password)}
               helperText={touched.password && errors.password}
               sx={{ gridColumn: "span 4" }}
+              autoComplete="current-password"
             />
           </Box>
 

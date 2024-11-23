@@ -11,9 +11,10 @@ const LoginPage = () => {
         backgroundColor={theme.palette.background.alt}
         p="1rem 6%"
         textAlign="center"
+    
       >
         <Typography fontWeight="bold" fontSize="32px" color="primary">
-          Sociopedia
+          Borderbook
         </Typography>
       </Box>
 
@@ -25,7 +26,7 @@ const LoginPage = () => {
         backgroundColor={theme.palette.background.alt}
       >
         <Typography fontWeight="500" variant="h5" sx={{ mb: "1.5rem" }}>
-          Welcome to Socipedia, the Social Media for Sociopaths!
+          Welcome to Borderbook, the Social Media for International Border Crossers!
         </Typography>
         <Form />
       </Box>

@@ -26,6 +26,57 @@ export const createPost = async (req, res) => {
   }
 };
 
+
+// In your posts controller file (e.g., posts.js)
+export const addCommentToPost = async (req, res) => {
+  try {
+    const { userId, comment } = req.body;
+    const { id: postId } = req.params;
+
+    // Log request data
+    console.log("Received add comment request with data:", { userId, comment, postId });
+
+    // Find user information for comment's name
+    const user = await User.findById(userId);
+    if (!user) {
+      console.error("User not found:", userId);
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    console.log("User found:", user);
+
+    // Find post to add comment
+    const post = await Post.findById(postId);
+    if (!post) {
+      console.error("Post not found:", postId);
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    console.log("Post found:", post);
+
+    // Create new comment with all required fields
+    const newComment = {
+      userId,
+      name: `${user.firstName} ${user.lastName}`,
+      comment,
+      createdAt: new Date(),
+    };
+
+    console.log("New comment object:", newComment);
+
+    // Push the comment to the comments array and save
+    post.comments.push(newComment);
+    await post.save();
+
+    console.log("Comment added and post saved successfully");
+
+    res.status(200).json(post);
+  } catch (error) {
+    console.error("Error in addCommentToPost function:", error); // Log detailed error
+    res.status(500).json({ message: error.message });
+  }
+};
+
 /* READ */
 export const getFeedPosts = async (req, res) => {
   try {
