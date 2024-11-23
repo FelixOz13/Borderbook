@@ -74,6 +74,13 @@ app.use('/users', userRoutes);
 app.use('/posts', postRoutes);
 app.use('/uploads', express.static('uploads'));
 
+
+// Serve the React frontend
+app.use(express.static(path.join(__dirname, '../client/build')));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+});
+
 // Database connection and server startup
 const PORT = process.env.PORT || 6001;
 mongoose
