@@ -26,9 +26,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // CORS configuration
-const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',');
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : []; // Default to empty array if ALLOWED_ORIGINS is undefined
+
 const corsOptions = {
-  origin: allowedOrigins,
+  origin: allowedOrigins.length > 0 ? allowedOrigins : '*', // Use '*' if no origins are specified
 };
 
 // Middleware setup
@@ -38,11 +41,11 @@ app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
 app.use(morgan('common'));
 app.use(bodyParser.json({ limit: '30mb', extended: true }));
 app.use(bodyParser.urlencoded({ limit: '30mb', extended: true }));
-app.use(cors());
+app.use(cors(corsOptions)); // Apply CORS configuration
 
 // Root route handler
 app.get('/', (req, res) => {
-  res.send('Welcome to the server!'); // You can customize this message or serve an HTML file
+  res.send('Welcome to the server!');
 });
 
 // Static file serving
@@ -69,7 +72,7 @@ app.post('/posts', verifyToken, upload.single('picture'), createPost);
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/posts', postRoutes);
-app.use("/uploads", express.static("uploads"));
+app.use('/uploads', express.static('uploads'));
 
 // Database connection and server startup
 const PORT = process.env.PORT || 6001;

@@ -1,6 +1,7 @@
 {
   "name": "borderbook",
   "version": "1.0.0",
+  "proxy":"3001",
   "main": "index.js",
   "type": "module",
   "scripts": {
