@@ -26,13 +26,24 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // CORS configuration
+
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',')
   : []; // Default to empty array if ALLOWED_ORIGINS is undefined
 
-const corsOptions = {
-  origin: allowedOrigins.length > 0 ? allowedOrigins : '*', // Use '*' if no origins are specified
-};
+  const corsOptions = {
+    origin: (origin, callback) => {
+      console.log('Origin:', origin); // Debugging the origin
+      if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+        callback(null, true);
+      } else {
+        console.error(`Blocked by CORS: ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+  };
+
 
 // Middleware setup
 app.use(express.json());
@@ -41,7 +52,11 @@ app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
 app.use(morgan('common'));
 app.use(bodyParser.json({ limit: '30mb', extended: true }));
 app.use(bodyParser.urlencoded({ limit: '30mb', extended: true }));
-app.use(cors(corsOptions)); // Apply CORS configuration
+app.use(cors({
+  origin: 'https://borderbook.netlify.app', // Replace with your frontend's URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specify allowed HTTP methods
+  credentials: true, // Allow cookies and credentials
+})); // Apply CORS configuration
 
 // Root route handler
 app.get('/', (req, res) => {
@@ -73,6 +88,18 @@ app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/posts', postRoutes);
 app.use('/uploads', express.static('uploads'));
+
+//Serve Frontend
+if (process.env.NODE_ENV === 'production'){
+  app.use(express.static(path.join(__dirname,'../frontend/build')))
+
+  app.get('*',(req,res) => res.sendFile(path.resolve(__dirname, '../', 'frontend','build','index.html')
+
+  )
+)
+} else{
+  app.get('/', (req, res) =>res.send('Please set to production'))
+}
 
 
 // Serve the React frontend
