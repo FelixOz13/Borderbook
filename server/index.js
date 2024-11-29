@@ -26,21 +26,22 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // CORS configuration
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',')
-  : ['*']; // Default to allowing all origins if undefined
+const allowedOrigins = [
+  "http://localhost:3000", // for local development
+  "https://borderbook.netlify.app", // your frontend URL on Netlify
+  "https://borderbook-67b678581a8e.herokuapp.com", // Heroku backend URL
+];
 
 const corsOptions = {
   origin: (origin, callback) => {
-    console.log('Origin:', origin); // Debugging the origin
-    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+    if (allowedOrigins.includes(origin) || !origin) { // Allow no-origin for server-to-server requests
       callback(null, true);
     } else {
-      console.error(`Blocked by CORS: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true,
+  methods: "GET,POST,PUT,DELETE",
+  allowedHeaders: "Content-Type, Authorization"
 };
 
 // Middleware setup

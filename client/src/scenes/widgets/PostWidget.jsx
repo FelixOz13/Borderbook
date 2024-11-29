@@ -37,7 +37,7 @@ const PostWidget = ({
   const primary = palette.primary.main
 
   const patchLike = async () => {
-    const response = await fetch(`http://localhost:3001/posts/${postId}/like`, {
+    const response = await fetch(`https://borderbook-67b678581a8e.herokuapp.com/posts/${postId}/like`, {
       method: 'PATCH',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -53,7 +53,7 @@ const PostWidget = ({
   const handleCommentSubmit = async () => {
     try {
       console.log("Submitting comment:", { userId: loggedInUserId, comment: newComment });
-      const response = await fetch(`http://localhost:3001/posts/${postId}/comment`, {
+      const response = await fetch(`https://borderbook-67b678581a8e.herokuapp.com/posts/${postId}/comment`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -94,7 +94,7 @@ const PostWidget = ({
           height="auto"
           alt="post"
           style={{ borderRadius: '0.75rem', marginTop: '0.75rem' }}
-          src={`http://localhost:3001/assets/${picturePath}`}
+          src={`https://borderbook-67b678581a8e.herokuapp.com/assets/${picturePath}`}
         />
       )}
       <FlexBetween mt="0.25rem">

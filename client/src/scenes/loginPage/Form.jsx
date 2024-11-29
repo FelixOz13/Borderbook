@@ -68,7 +68,7 @@ const Form = () => {
     }
   
     try {
-      const savedUserResponse = await fetch("http://localhost:3001/auth/register", {
+      const savedUserResponse = await fetch("https://borderbook-67b678581a8e.herokuapp.com/auth/register", {
         method: "POST",
         body: formData,
       });
@@ -108,7 +108,7 @@ const Form = () => {
   
 
   const login = async (values, onSubmitProps) => {
-    const loggedInResponse = await fetch("http://localhost:3001/auth/login", {
+    const loggedInResponse = await fetch("https://borderbook-67b678581a8e.herokuapp.com/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(values), // 'values' should have { email, password }
