@@ -26,24 +26,22 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // CORS configuration
-
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',')
-  : []; // Default to empty array if ALLOWED_ORIGINS is undefined
+  : ['*']; // Default to allowing all origins if undefined
 
-  const corsOptions = {
-    origin: (origin, callback) => {
-      console.log('Origin:', origin); // Debugging the origin
-      if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
-        callback(null, true);
-      } else {
-        console.error(`Blocked by CORS: ${origin}`);
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    credentials: true,
-  };
-
+const corsOptions = {
+  origin: (origin, callback) => {
+    console.log('Origin:', origin); // Debugging the origin
+    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      callback(null, true);
+    } else {
+      console.error(`Blocked by CORS: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+};
 
 // Middleware setup
 app.use(express.json());
@@ -52,11 +50,7 @@ app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
 app.use(morgan('common'));
 app.use(bodyParser.json({ limit: '30mb', extended: true }));
 app.use(bodyParser.urlencoded({ limit: '30mb', extended: true }));
-app.use(cors({
-  origin: 'https://borderbook.netlify.app', // Replace with your frontend's URL
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specify allowed HTTP methods
-  credentials: true, // Allow cookies and credentials
-})); // Apply CORS configuration
+app.use(cors(corsOptions)); // Apply dynamic CORS configuration
 
 // Root route handler
 app.get('/', (req, res) => {
@@ -65,11 +59,12 @@ app.get('/', (req, res) => {
 
 // Static file serving
 app.use('/assets', express.static(path.join(__dirname, './public/assets')));
+app.use('/uploads', express.static(path.join(__dirname, './public/uploads'))); // Static folder for uploads
 
 // File upload configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const savePath = path.join(__dirname, './public/assets');
+    const savePath = path.join(__dirname, './public/uploads'); // Saving to the uploads folder
     console.log('Saving file to:', savePath); // Debugging file path
     cb(null, savePath);
   },
@@ -77,6 +72,7 @@ const storage = multer.diskStorage({
     cb(null, file.originalname);
   },
 });
+
 const upload = multer({ storage });
 
 // Routes with file uploads
@@ -87,9 +83,8 @@ app.post('/posts', verifyToken, upload.single('picture'), createPost);
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/posts', postRoutes);
-app.use('/uploads', express.static('uploads'));
 
-// Serve Frontend
+// Serve Frontend in production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../client/build')));
 
@@ -99,8 +94,6 @@ if (process.env.NODE_ENV === 'production') {
 } else {
   app.get('/', (req, res) => res.send('Please set to production'));
 }
-
-
 
 // Database connection and server startup
 const PORT = process.env.PORT || 6001;
