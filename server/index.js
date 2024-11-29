@@ -91,22 +91,16 @@ app.use('/uploads', express.static('uploads'));
 
 // Serve Frontend
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../frontend/build')));
+  app.use(express.static(path.join(__dirname, '../client/build')));
 
   app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../', 'frontend', 'build', 'index.html'));
+    res.sendFile(path.resolve(__dirname, '../', 'client', 'build', 'index.html'));
   });
 } else {
   app.get('/', (req, res) => res.send('Please set to production'));
 }
 
 
-
-// Serve the React frontend
-app.use(express.static(path.join(__dirname, '../client/build')));
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
-});
 
 // Database connection and server startup
 const PORT = process.env.PORT || 6001;
