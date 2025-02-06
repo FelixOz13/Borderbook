@@ -1,10 +1,10 @@
 import multer from 'multer';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken'; // Ensure JWT is imported
+import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import cloudinary from 'cloudinary';
+import fs from 'fs';
 import path from 'path';
-
-
 
 // Set up multer storage for file uploads
 const storage = multer.diskStorage({
@@ -33,47 +33,51 @@ export const upload = multer({
   },
 });
 
-
-// Register Route with file upload handling
-
-
+// Configure Cloudinary (This should be done once, and you can move it to a separate config file)
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export const register = async (req, res) => {
   try {
     const { firstName, lastName, email, password, location, occupation } = req.body;
-    const picturePath = req.file.originalname; // Get the uploaded file's path
 
-    console.log("Received data:", req.body);
-    console.log("Uploaded file path:", picturePath);
+    // Handle file upload and get Cloudinary URL
+    let pictureUrl = '';
+    if (req.file) {
+      pictureUrl = await uploadToCloudinary(req.file.path); // Upload image and get URL
+    }
 
-    // Hash the password for security
+    // Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create a new user document
+    // Create and save the user
     const newUser = new User({
       firstName,
       lastName,
       email,
-      password: hashedPassword, // Save hashed password
+      password: hashedPassword,
       location,
       occupation,
-      picturePath,
+      picture: pictureUrl,
     });
 
-    // Save the user to the database
     const savedUser = await newUser.save();
 
-    // Respond with success
+    // Return success response
     res.status(201).json({
       message: "User registered successfully!",
       user: savedUser,
     });
   } catch (error) {
-    console.error("Error in register controller:", error);
-    res.status(500).json({ message: "Registration failed." });
+    console.error("Error during registration:", error.message);
+    res.status(500).json({ message: `Registration failed: ${error.message}` });
   }
 };
+
 
 /* LOGGING IN */
 export const login = async (req, res) => {

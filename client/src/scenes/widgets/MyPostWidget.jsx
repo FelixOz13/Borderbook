@@ -30,33 +30,78 @@ const MyPostWidget = ({ picturePath }) => {
   const [isImage, setIsImage] = useState(false);
   const [image, setImage] = useState(null);
   const [post, setPost] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const { palette } = useTheme();
   const { _id } = useSelector((state) => state.user);
   const token = useSelector((state) => state.token);
   const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
+
   const mediumMain = palette.neutral.mediumMain;
   const medium = palette.neutral.medium;
 
   const handlePost = async () => {
-    const formData = new FormData();
-    formData.append("userId", _id);
-    formData.append("description", post);
-    if (image) {
-      formData.append("picture", image);
-      formData.append("picturePath", image.name);
+    console.log("Post submission started"); // Log when the function starts
+  
+    // Validation: Ensure post content is present
+    if (!post.trim()) {
+      console.error("Post content is required");
+      return;
     }
-
-    const response = await fetch(`https://borderbook-67b678581a8e.herokuapp.com/posts`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
-    });
-    const posts = await response.json();
-    dispatch(setPosts({ posts }));
-    setImage(null);
-    setPost("");
+  
+    // Validation: Ensure an image is provided if `isImage` is true
+    if (isImage && !image) {
+      console.error("Image is required when 'isImage' is true");
+      return;
+    }
+  
+    try {
+      setLoading(true); // Start loading state
+      console.log("Preparing FormData..."); // Log before creating FormData
+  
+      const formData = new FormData();
+      formData.append("post", post);
+      if (image) {
+        formData.append("picture", image);
+      }
+  
+      console.log("FormData contents:", [...formData.entries()]); // Log FormData contents
+  
+      // Fetch API call
+      console.log("Sending POST request...");
+      const response = await fetch("https://borderbook-67b678581a8e.herokuapp.com/posts", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+  
+      console.log("Response status:", response.status); // Log HTTP status code
+  
+      // Check for response errors
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      console.log("Post created successfully:", data); // Log success response
+  
+      // Reset form after successful submission
+      console.log("Resetting form...");
+      setPost("");
+      setImage(null);
+      setIsImage(false);
+  
+      // Update Redux state
+      console.log("Dispatching setPosts with new data...");
+      dispatch(setPosts(data));
+    } catch (error) {
+      console.error("Error creating post:", error); // Log any errors encountered
+    } finally {
+      setLoading(false); // End loading state
+      console.log("Post submission completed"); // Log when the function ends
+    }
   };
-
+  
   return (
     <WidgetWrapper>
       <FlexBetween gap="1.5rem">
@@ -73,13 +118,9 @@ const MyPostWidget = ({ picturePath }) => {
           }}
         />
       </FlexBetween>
+
       {isImage && (
-        <Box
-          border={`1px solid ${medium}`}
-          borderRadius="5px"
-          mt="1rem"
-          p="1rem"
-        >
+        <Box border={`1px solid ${medium}`} borderRadius="5px" mt="1rem" p="1rem">
           <Dropzone
             acceptedFiles=".jpg,.jpeg,.png"
             multiple={false}
@@ -96,7 +137,7 @@ const MyPostWidget = ({ picturePath }) => {
                 >
                   <input {...getInputProps()} />
                   {!image ? (
-                    <p>Add Image Here</p>
+                    <Typography>Add Image Here</Typography>
                   ) : (
                     <FlexBetween>
                       <Typography>{image.name}</Typography>
@@ -105,10 +146,7 @@ const MyPostWidget = ({ picturePath }) => {
                   )}
                 </Box>
                 {image && (
-                  <IconButton
-                    onClick={() => setImage(null)}
-                    sx={{ width: "15%" }}
-                  >
+                  <IconButton onClick={() => setImage(null)} sx={{ width: "15%" }}>
                     <DeleteOutlined />
                   </IconButton>
                 )}
@@ -155,7 +193,7 @@ const MyPostWidget = ({ picturePath }) => {
         )}
 
         <Button
-          disabled={!post}
+          disabled={loading || !post.trim()}
           onClick={handlePost}
           sx={{
             color: palette.background.alt,
@@ -163,7 +201,7 @@ const MyPostWidget = ({ picturePath }) => {
             borderRadius: "3rem",
           }}
         >
-          POST
+          {loading ? "Posting..." : "POST"}
         </Button>
       </FlexBetween>
     </WidgetWrapper>
